@@ -1,26 +1,25 @@
 /* --- Hero Section Styling --- */
 .hero-section {
     position: relative;
-    /* Placeholder campus image - replace with your own NSU image URL */
     background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070&auto=format&fit=crop');
     background-size: cover;
     background-position: center;
-    background-attachment: fixed; /* Gives a slight parallax effect */
-    min-height: 85vh; /* Takes up 85% of the screen height */
+    background-attachment: fixed; 
+    min-height: 85vh;
 }
 
-/* Deep blue overlay to make text readable */
+
 .hero-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(23, 30, 45, 0.85); /* Dark blue overlay */
+    background: rgba(23, 30, 45, 0.85);
     z-index: 0;
 }
 
-/* Elegant font for the main title */
+
 .hero-title {
     font-family: 'Playfair Display', serif;
     letter-spacing: -0.5px;
@@ -30,7 +29,7 @@
     letter-spacing: 3px;
 }
 
-/* Custom Coral Button matching your image */
+
 .btn-custom-coral {
     background-color: #f06b50;
     border-color: #f06b50;
@@ -45,7 +44,7 @@
     transform: translateY(-3px);
 }
 
-/* Gentle bounce animation for the arrow */
+
 @keyframes bounce {
     0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
     40% { transform: translateY(-10px); }
@@ -58,15 +57,15 @@
     cursor: pointer;
 }
 
-/* --- Main Marketplace Styling --- */
 
-/* Make the form stick to the top when scrolling */
+
+
 .sticky-form {
     position: sticky;
     top: 90px;
 }
 
-/* Image styling for cards */
+
 .marketplace-img {
     height: 220px;
     object-fit: cover;
@@ -74,7 +73,7 @@
     border-top-right-radius: var(--bs-border-radius-xl);
 }
 
-/* Card hover animation */
+
 .card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -84,7 +83,7 @@
     box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
 }
 
-/* Custom styling for the filter pill buttons */
+
 .nav-pills .nav-link {
     font-weight: 600;
     background-color: #f8f9fa;
@@ -96,7 +95,7 @@
     color: white !important;
 }
 
-/* Fix input group search bar focus outline */
+
 .input-group:focus-within {
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
     border-radius: var(--bs-border-radius);

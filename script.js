@@ -119,13 +119,13 @@ searchInput.addEventListener('input', function(e) {
 
 filterButtons.forEach(button => {
     button.addEventListener('click', function(e) {
-        // Remove active class from all buttons
+     
         filterButtons.forEach(btn => btn.classList.remove('active', 'text-white'));
         
-        // Add active class to clicked button
+        
         this.classList.add('active', 'text-white');
         
-        // Update filter state and re-render
+       
         currentFilter = this.getAttribute('data-filter');
         displayItems();
     });
