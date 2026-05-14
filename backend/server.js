@@ -28,7 +28,7 @@ app.use(session({
 }));
 
 // --- MongoDB ---
-mongoose.connect('mongodb://niloy202:niloy1234@ac-ywhxfgr-shard-00-00.eixdu5m.mongodb.net:27017,ac-ywhxfgr-shard-00-01.eixdu5m.mongodb.net:27017,ac-ywhxfgr-shard-00-02.eixdu5m.mongodb.net:27017/?ssl=true&replicaSet=atlas-5vu86q-shard-0&authSource=admin&appName=Cluster0')
+mongoose.connect('process.env.MONGO_URI')
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.error('MongoDB error:', err));
 
