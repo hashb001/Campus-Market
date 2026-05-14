@@ -1,4 +1,4 @@
-const API = 'http://localhost:5000/api';
+const API = 'https://campus-market-s0c7.onrender.com/api';
 
 let currentFilter = 'All';
 let searchQuery = '';
