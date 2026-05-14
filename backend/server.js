@@ -28,7 +28,7 @@ app.use(session({
 }));
 
 // --- MongoDB ---
-mongoose.connect('process.env.MONGO_URI')
+mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.error('MongoDB error:', err));
 
@@ -51,6 +51,14 @@ const listingSchema = new mongoose.Schema({
     image: { type: String, default: '' }
 }, { timestamps: true });
 const Listing = mongoose.model('Listing', listingSchema);
+
+// --- Contact Schema (NEW) ---
+const contactSchema = new mongoose.Schema({
+    email: { type: String, required: true },
+    message: { type: String, required: true },
+    read: { type: Boolean, default: false }
+}, { timestamps: true });
+const Contact = mongoose.model('Contact', contactSchema);
 
 // --- File Upload ---
 const storage = multer.diskStorage({
@@ -186,12 +194,34 @@ app.delete('/api/listings/:id', requireLogin, async (req, res) => {
     }
 });
 
-app.post('/api/contact', (req, res) => {
-    const { email, message } = req.body;
-    if (!email || !message) return res.status(400).json({ error: 'Email and message required' });
-    req.session.lastContact = { email, sentAt: new Date() };
-    console.log(`[Admin Message] From: ${email} | Message: ${message}`);
-    res.json({ success: true, message: 'Message received by admins.' });
+// ======================
+//   CONTACT ROUTE (UPDATED)
+// ======================
+
+// Save message to MongoDB
+app.post('/api/contact', async (req, res) => {
+    try {
+        const { email, message } = req.body;
+        if (!email || !message) return res.status(400).json({ error: 'Email and message required' });
+
+        const contact = new Contact({ email, message });
+        await contact.save();
+
+        console.log(`[Admin Message] From: ${email} | Message: ${message}`);
+        res.json({ success: true, message: 'Message received by admins.' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET all contact messages (for you to view)
+app.get('/api/contact', async (req, res) => {
+    try {
+        const messages = await Contact.find().sort({ createdAt: -1 });
+        res.json(messages);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 const PORT = process.env.PORT || 5000;
