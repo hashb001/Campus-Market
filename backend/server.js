@@ -63,12 +63,18 @@ if (CLIENT_ORIGINS.length) {
 app.use(express.json({ limit: '100kb' }));
 app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
+// One shared MongoDB connection for both Mongoose and the session store
+const mongoReady = mongoose.connect(MONGO_URI);
+
 const sessionMiddleware = session({
     name: 'cm.sid',
     secret: SESSION_SECRET || 'dev-only-insecure-secret',
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({ mongoUrl: MONGO_URI, ttl: 60 * 60 * 24 * 7 }),
+    store: MongoStore.create({
+        clientPromise: mongoReady.then(m => m.connection.getClient()).catch(() => new Promise(() => {})),
+        ttl: 60 * 60 * 24 * 7
+    }),
     cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 7,
         httpOnly: true,
@@ -441,12 +447,19 @@ io.on('connection', (socket) => {
 //   START
 // ======================
 
-mongoose.connect(MONGO_URI)
+mongoReady
     .then(() => {
         console.log('MongoDB connected');
         server.listen(PORT, () => console.log(`Campus Market running on http://localhost:${PORT}`));
     })
     .catch(err => {
         console.error('MongoDB connection error:', err.message);
+        if (/auth/i.test(err.message)) {
+            console.error('-> Check the username and password in MONGO_URI (no < > around the password).');
+        } else if (/ENOTFOUND|querySrv/i.test(err.message)) {
+            console.error('-> Check the cluster address in MONGO_URI.');
+        } else if (/timed out|ECONNREFUSED|Server selection/i.test(err.message)) {
+            console.error('-> In Atlas, check Network Access allows your IP (or 0.0.0.0/0) and the cluster is not paused.');
+        }
         process.exit(1);
     });
