@@ -1,0 +1,194 @@
+/* --- Hero Section Styling --- */
+.hero-section {
+    position: relative;
+    background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed; 
+    min-height: 85vh;
+}
+
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(23, 30, 45, 0.85);
+    z-index: 0;
+}
+
+
+.hero-title {
+    font-family: 'Playfair Display', serif;
+    letter-spacing: -0.5px;
+}
+
+.tracking-wide {
+    letter-spacing: 3px;
+}
+
+
+.btn-custom-coral {
+    background-color: #f06b50;
+    border-color: #f06b50;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.btn-custom-coral:hover {
+    background-color: #d95a40;
+    border-color: #d95a40;
+    color: white;
+    transform: translateY(-3px);
+}
+
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}
+
+.animate-bounce {
+    display: inline-block;
+    animation: bounce 2s infinite;
+    cursor: pointer;
+}
+
+
+
+
+.sticky-form {
+    position: sticky;
+    top: 90px;
+}
+
+
+.marketplace-img {
+    height: 220px;
+    object-fit: cover;
+    border-top-left-radius: var(--bs-border-radius-xl);
+    border-top-right-radius: var(--bs-border-radius-xl);
+}
+
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+}
+
+
+.nav-pills .nav-link {
+    font-weight: 600;
+    background-color: #f8f9fa;
+    cursor: pointer;
+}
+
+.nav-pills .nav-link.active {
+    background-color: #05162e !important;
+    color: white !important;
+}
+
+
+.input-group:focus-within {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    border-radius: var(--bs-border-radius);
+}
+
+/* --- Navbar search --- */
+.nav-search {
+    width: 100%;
+}
+
+@media (min-width: 992px) {
+    .nav-search {
+        flex: 1 1 auto;
+        max-width: 420px;
+        margin: 0 1rem;
+    }
+
+    .navbar .btn {
+        white-space: nowrap;
+    }
+
+    .navbar-collapse > .d-flex {
+        flex-wrap: nowrap !important;
+    }
+}
+
+/* Compact navbar labels between lg and xl so everything fits on one line */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .nav-label {
+        display: none;
+    }
+}
+
+.hero-lead {
+    max-width: 720px;
+}
+
+/* --- Listing form disabled when logged out --- */
+.form-disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* --- Cards --- */
+.placeholder-img {
+    background: #eef0f3;
+}
+
+.item-info,
+.inbox-message {
+    white-space: pre-line;
+    word-break: break-word;
+}
+
+/* --- Verification code input --- */
+.code-input {
+    letter-spacing: 10px;
+    font-weight: 700;
+}
+
+/* --- Toasts --- */
+.cm-toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    max-width: calc(100vw - 40px);
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.cm-toast.show {
+    opacity: 1;
+}
+
+/* --- Mobile --- */
+@media (max-width: 991.98px) {
+    .sticky-form {
+        position: static;
+    }
+
+    .hero-section {
+        min-height: 70vh;
+        background-attachment: scroll;
+    }
+
+    .cm-toast {
+        right: 20px;
+        bottom: 20px;
+    }
+}
