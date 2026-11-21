@@ -174,11 +174,15 @@ function setAuthMessage(kind, text) {
 }
 
 function showTab(tab) {
-    const forms = { login: 'loginForm', register: 'registerForm', verify: 'verifyForm' };
+    const forms = { login: 'loginForm', register: 'registerForm', verify: 'verifyForm', forgot: 'forgotForm', reset: 'resetForm' };
     Object.entries(forms).forEach(([name, id]) => {
         document.getElementById(id).classList.toggle('d-none', name !== tab);
     });
-    document.getElementById('authTabs').classList.toggle('d-none', tab === 'verify');
+    document.getElementById('authTabs').classList.toggle('d-none', !['login', 'register'].includes(tab));
+    if (tab === 'forgot') {
+        const loginEmail = document.getElementById('loginEmail').value.trim();
+        if (loginEmail) document.getElementById('forgotEmail').value = loginEmail;
+    }
     document.getElementById('loginTab').classList.toggle('active', tab === 'login');
     document.getElementById('registerTab').classList.toggle('active', tab === 'register');
     if (tab !== 'verify') setAuthMessage(null);
@@ -283,6 +287,62 @@ async function resendCode() {
     setTimeout(() => { btn.disabled = false; }, 60000);
 }
 
+// --- Forgot password ---
+let pendingResetEmail = null;
+
+async function requestResetCode(email) {
+    const { ok, data } = await api('/forgot-password', jsonBody({ email }));
+    if (!ok) throw new Error(data.error || 'Could not send a reset code.');
+    return data.message;
+}
+
+async function handleForgot(e) {
+    e.preventDefault();
+    const email = document.getElementById('forgotEmail').value.trim();
+    await withButton(e.target, 'Sending...', async () => {
+        try {
+            const message = await requestResetCode(email);
+            pendingResetEmail = email;
+            document.getElementById('resetEmailLabel').textContent = email;
+            document.getElementById('resetForm').reset();
+            showTab('reset');
+            setAuthMessage('info', message);
+            setTimeout(() => document.getElementById('resetCode').focus(), 100);
+        } catch (err) {
+            setAuthMessage('error', err.message === 'Failed to fetch' ? 'Could not reach server.' : err.message);
+        }
+    });
+}
+
+async function handleReset(e) {
+    e.preventDefault();
+    const code = document.getElementById('resetCode').value.trim();
+    const password = document.getElementById('resetPassword').value;
+    await withButton(e.target, 'Saving...', async () => {
+        try {
+            const { ok, data } = await api('/reset-password', jsonBody({ email: pendingResetEmail, code, password }));
+            if (!ok) return setAuthMessage('error', data.error || 'Could not reset password.');
+            document.getElementById('resetForm').reset();
+            onLoggedIn(data.user, 'Password updated. You\'re logged in.');
+        } catch {
+            setAuthMessage('error', 'Could not reach server.');
+        }
+    });
+}
+
+async function resendResetCode() {
+    if (!pendingResetEmail) return;
+    const btn = document.getElementById('resendResetBtn');
+    btn.disabled = true;
+    try {
+        await requestResetCode(pendingResetEmail);
+        setAuthMessage('info', `A new code was sent to ${pendingResetEmail}.`);
+    } catch (err) {
+        setAuthMessage('error', err.message === 'Failed to fetch' ? 'Could not reach server.' : err.message);
+    }
+    setTimeout(() => { btn.disabled = false; }, 60000);
+}
+
 async function logout() {
     try { await api('/logout', { method: 'POST' }); } catch { /* ignore */ }
     currentUser = null;
@@ -304,11 +364,23 @@ function renderCard(item) {
     const canEdit = currentUser && (currentUser.isAdmin || item.owner === currentUser.id);
     const isMine = currentUser && item.owner === currentUser.id;
     const phone = String(item.sellerNumber || '').replace(/[^\d+]/g, '');
+    const doneLabel = isSell ? 'Sold' : 'Traded';
+
+    // Phone numbers only come from the server for logged-in students
+    const contactHtml = item.sellerNumber
+        ? `<a class="card-text text-info fw-bold mb-0 d-inline-block text-decoration-none" href="tel:${escapeHtml(phone)}">
+               <i class="bi bi-telephone-fill me-2"></i>${escapeHtml(item.sellerNumber)}
+           </a>`
+        : `<a href="#" class="card-text small fw-semibold mb-0 d-inline-block text-decoration-none" data-bs-toggle="modal"
+              data-bs-target="#authModal" onclick="showTab('login')">
+               <i class="bi bi-lock-fill me-1"></i>Log in with your NSU email to see contact
+           </a>`;
 
     const col = document.createElement('div');
     col.className = 'col-md-6 mb-4';
     col.innerHTML = `
-        <div class="card shadow-sm h-100 border-0 rounded-4">
+        <div class="card shadow-sm h-100 border-0 rounded-4 position-relative ${item.sold ? 'card-sold' : ''}">
+            ${item.sold ? `<span class="sold-ribbon badge bg-dark px-3 py-2 rounded-pill"><i class="bi bi-check2-circle me-1"></i>${doneLabel}</span>` : ''}
             ${img
                 ? `<img src="${escapeHtml(img)}" class="card-img-top img-fluid marketplace-img" alt="${escapeHtml(item.productName)}" loading="lazy">`
                 : `<div class="marketplace-img placeholder-img d-flex align-items-center justify-content-center"><i class="bi bi-image text-muted fs-1"></i></div>`}
@@ -326,12 +398,16 @@ function renderCard(item) {
                         <i class="bi bi-person-circle me-2"></i>${escapeHtml(item.sellerName)}${isMine ? ' <span class="badge bg-info text-dark ms-1">You</span>' : ''}
                         <span class="float-end">${escapeHtml(timeAgo(item.createdAt))}</span>
                     </p>
-                    <a class="card-text text-info fw-bold mb-0 d-inline-block text-decoration-none" href="tel:${escapeHtml(phone)}">
-                        <i class="bi bi-telephone-fill me-2"></i>${escapeHtml(item.sellerNumber)}
-                    </a>
+                    ${contactHtml}
                 </div>
                 ${canEdit ? `
-                <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-sm ${item.sold ? 'btn-outline-success' : 'btn-success'} rounded-pill mt-3" data-action="sold"
+                    data-id="${escapeHtml(item._id)}" data-sold="${item.sold ? 'true' : 'false'}">
+                    ${item.sold
+                        ? '<i class="bi bi-arrow-counterclockwise me-1"></i>Mark as available again'
+                        : `<i class="bi bi-check2-circle me-1"></i>Mark as ${doneLabel.toLowerCase()}`}
+                </button>
+                <div class="d-flex gap-2 mt-2">
                     <button class="btn btn-sm btn-outline-secondary rounded-pill flex-fill" data-action="edit" data-id="${escapeHtml(item._id)}">
                         <i class="bi bi-pencil me-1"></i>Edit
                     </button>
@@ -439,7 +515,23 @@ listingsContainer.addEventListener('click', (e) => {
     const id = btn.dataset.id;
     if (btn.dataset.action === 'delete') deleteListing(id);
     if (btn.dataset.action === 'edit') openEdit(id);
+    if (btn.dataset.action === 'sold') setSold(id, btn.dataset.sold !== 'true');
 });
+
+async function setSold(id, sold) {
+    try {
+        const { ok, data } = await api(`/listings/${encodeURIComponent(id)}/sold`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sold })
+        });
+        if (!ok) return showToast(data.error || 'Could not update listing.', 'danger');
+        showToast(sold
+            ? 'Marked as done. It\'s hidden from the marketplace but still under "My listings".'
+            : 'Listing is available again.', 'success');
+        displayItems();
+    } catch {
+        showToast('Could not reach server.', 'danger');
+    }
+}
 
 async function deleteListing(id) {
     if (!confirm('Remove this listing? This cannot be undone.')) return;

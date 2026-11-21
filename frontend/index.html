@@ -94,6 +94,7 @@
                             <input type="password" id="loginPassword" class="form-control" autocomplete="current-password" required>
                         </div>
                         <button type="submit" class="btn btn-secondary w-100 rounded-pill">Login</button>
+                        <button type="button" class="btn btn-link w-100 small mt-2" onclick="showTab('forgot')">Forgot password?</button>
                     </form>
 
                     <!-- Register Form -->
@@ -132,6 +133,39 @@
                         </div>
                         <button type="submit" class="btn btn-secondary w-100 rounded-pill mb-2">Verify &amp; Continue</button>
                         <button type="button" class="btn btn-link w-100 small" id="resendBtn" onclick="resendCode()">Resend code</button>
+                    </form>
+
+                    <!-- Forgot Password: step 1, ask for email -->
+                    <form id="forgotForm" class="d-none" onsubmit="handleForgot(event)">
+                        <p class="small text-muted mb-3">Enter your NSU email and we'll send you a code to set a new password.</p>
+                        <div class="mb-3">
+                            <label class="form-label" for="forgotEmail">NSU Email</label>
+                            <input type="email" id="forgotEmail" class="form-control"
+                                placeholder="firstname.lastname@northsouth.edu" autocomplete="email" required>
+                        </div>
+                        <button type="submit" class="btn btn-secondary w-100 rounded-pill mb-2">Send reset code</button>
+                        <button type="button" class="btn btn-link w-100 small" onclick="showTab('login')">Back to login</button>
+                    </form>
+
+                    <!-- Forgot Password: step 2, code + new password -->
+                    <form id="resetForm" class="d-none" onsubmit="handleReset(event)">
+                        <p class="small text-muted mb-3">
+                            Enter the 6-digit code we sent to <strong id="resetEmailLabel"></strong> and choose a new password.
+                            Check your spam folder if you can't find it.
+                        </p>
+                        <div class="mb-3">
+                            <label class="form-label" for="resetCode">Reset Code</label>
+                            <input type="text" id="resetCode" class="form-control form-control-lg text-center code-input"
+                                inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code"
+                                placeholder="------" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="resetPassword">New Password</label>
+                            <input type="password" id="resetPassword" class="form-control" placeholder="Min 6 characters"
+                                minlength="6" autocomplete="new-password" required>
+                        </div>
+                        <button type="submit" class="btn btn-secondary w-100 rounded-pill mb-2">Set new password</button>
+                        <button type="button" class="btn btn-link w-100 small" id="resendResetBtn" onclick="resendResetCode()">Resend code</button>
                     </form>
                 </div>
             </div>
@@ -194,7 +228,7 @@
                         <input type="hidden" id="editId">
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-uppercase text-muted" for="editImage">Replace Image (optional)</label>
-                            <input type="file" id="editImage" class="form-control bg-light" accept="image/jpeg,image/png,image/webp,image/gif">
+                            <input type="file" id="editImage" class="form-control bg-light" accept="image/*">
                         </div>
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-uppercase text-muted" for="editProductName">Product Name</label>
@@ -279,8 +313,8 @@
                             <div class="mb-3">
                                 <label class="form-label text-muted small fw-bold text-uppercase" for="imageInput">Upload Image</label>
                                 <input type="file" id="imageInput" class="form-control bg-light"
-                                    accept="image/jpeg,image/png,image/webp,image/gif">
-                                <div class="form-text">JPEG, PNG, WEBP or GIF, up to 5 MB.</div>
+                                    accept="image/*">
+                                <div class="form-text">Any photo up to 10 MB. It's resized automatically.</div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label text-muted small fw-bold text-uppercase" for="sellerNumber">Contact Number</label>

@@ -37,14 +37,28 @@ function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-function buildMessage(name, code) {
-    return {
+const PURPOSES = {
+    verify: {
         subject: 'Your Campus Market verification code',
-        text: `Hi ${name},\n\nYour Campus Market verification code is: ${code}\n\nIt expires in 15 minutes. If you didn't sign up, you can ignore this email.`,
+        intro: 'Your Campus Market verification code is:',
+        ignore: "If you didn't sign up, you can ignore this email."
+    },
+    reset: {
+        subject: 'Reset your Campus Market password',
+        intro: 'Use this code to reset your Campus Market password:',
+        ignore: "If you didn't ask to reset your password, you can ignore this email. Your password won't change."
+    }
+};
+
+function buildMessage(name, code, purpose = 'verify') {
+    const p = PURPOSES[purpose] || PURPOSES.verify;
+    return {
+        subject: p.subject,
+        text: `Hi ${name},\n\n${p.intro} ${code}\n\nIt expires in 15 minutes. ${p.ignore}`,
         html: `<p>Hi ${escapeHtml(name)},</p>
-               <p>Your Campus Market verification code is:</p>
+               <p>${p.intro}</p>
                <p style="font-size:28px;font-weight:bold;letter-spacing:6px">${code}</p>
-               <p>It expires in 15 minutes. If you didn't sign up, you can ignore this email.</p>`
+               <p>It expires in 15 minutes. ${escapeHtml(p.ignore)}</p>`
     };
 }
 
@@ -70,13 +84,16 @@ async function sendViaBrevo(to, name, msg) {
     }
 }
 
-async function sendVerificationCode(to, name, code) {
-    const msg = buildMessage(name, code);
+async function sendCode(to, name, code, purpose = 'verify') {
+    const msg = buildMessage(name, code, purpose);
     if (mailMode === 'brevo') return sendViaBrevo(to, name, msg);
     if (mailMode === 'smtp') {
         return transporter.sendMail({ from: process.env.MAIL_FROM || process.env.SMTP_USER, to, ...msg });
     }
-    console.log(`[DEV] Verification code for ${to}: ${code} (email not configured, not sent)`);
+    const label = purpose === 'reset' ? 'Password reset code' : 'Verification code';
+    console.log(`[DEV] ${label} for ${to}: ${code} (email not configured, not sent)`);
 }
 
-module.exports = { sendVerificationCode, mailMode };
+const sendVerificationCode = (to, name, code) => sendCode(to, name, code, 'verify');
+
+module.exports = { sendCode, sendVerificationCode, mailMode };

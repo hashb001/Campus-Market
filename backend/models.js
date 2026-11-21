@@ -10,7 +10,12 @@ const userSchema = new mongoose.Schema({
     verifyCodeHash: { type: String, default: null },
     verifyCodeExpires: { type: Date, default: null },
     verifyAttempts: { type: Number, default: 0 },
-    verifyLastSent: { type: Date, default: null }
+    verifyLastSent: { type: Date, default: null },
+    // Password reset (same scheme as verification)
+    resetCodeHash: { type: String, default: null },
+    resetCodeExpires: { type: Date, default: null },
+    resetAttempts: { type: Number, default: 0 },
+    resetLastSent: { type: Date, default: null }
 }, { timestamps: true });
 
 // --- Image (stored in MongoDB so uploads survive redeploys on hosts like Render) ---
@@ -37,6 +42,8 @@ const listingSchema = new mongoose.Schema({
         max: 10000000,
         required: function () { return this.listingType === 'Sell'; }
     },
+    sold: { type: Boolean, default: false },
+    soldAt: { type: Date, default: null },
     image: { type: String, default: '' },
     imageId: { type: mongoose.Schema.Types.ObjectId, ref: 'Image', default: null },
     owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }

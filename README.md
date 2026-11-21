@@ -8,6 +8,10 @@ Anyone can browse. To post a listing you have to register with your `@northsouth
 
 - **NSU-only accounts.** Registration only accepts `@northsouth.edu` addresses, verified by an emailed code. Codes are hashed, expire after 15 minutes, allow 5 attempts, and can be resent once a minute.
 - **Listings.** Post an item to sell (with a price in ৳) or to exchange, with an optional photo. You can edit or remove only your own listings.
+- **Forgot password.** Students can reset their password with a code emailed to their NSU inbox.
+- **Mark as sold/traded.** Done listings leave the marketplace but stay under "My listings", and can be made available again.
+- **Photos are resized automatically.** Uploads up to 10 MB are shrunk to at most 1200px WebP (usually 100–200 KB), so the free 512 MB database lasts. Location (EXIF/GPS) data is stripped.
+- **Private contact numbers.** Sellers' phone numbers are only shown to logged-in NSU students.
 - **Browse.** Search, plus filters for Sell/Exchange, category and "My listings".
 - **Live updates.** New, edited and removed listings show up for everyone right away (Socket.io).
 - **Contact admins.** Anyone can message the admins. Admins (set with `ADMIN_EMAILS`) get an inbox with read/unread and delete, and can remove any listing.
@@ -79,10 +83,12 @@ If `BREVO_API_KEY` is set it's used; otherwise SMTP is used if configured. Any S
 | POST | `/api/verify` | public | Confirm code, logs in |
 | POST | `/api/resend-code` | public | Send a new code |
 | POST | `/api/login` / `/api/logout` | public | Session login/logout |
+| POST | `/api/forgot-password` / `/api/reset-password` | public | Email a reset code / set a new password |
 | GET | `/api/me` | user | Current user |
 | GET | `/api/listings?search=&type=&category=&mine=1` | public | Browse listings |
 | POST | `/api/listings` | verified user | Create listing (multipart, optional `image`) |
 | PUT / DELETE | `/api/listings/:id` | owner or admin | Edit / remove |
+| PATCH | `/api/listings/:id/sold` | owner or admin | Mark sold/traded or available |
 | GET | `/api/images/:id` | public | Listing image |
 | POST | `/api/contact` | public | Message the admins |
 | GET / PATCH / DELETE | `/api/contact[/:id]` | admin | Admin inbox |

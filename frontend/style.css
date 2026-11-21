@@ -192,3 +192,17 @@
         bottom: 20px;
     }
 }
+
+/* --- Sold / traded listings --- */
+.card-sold .marketplace-img,
+.card-sold .card-title,
+.card-sold .item-info {
+    opacity: 0.55;
+}
+
+.sold-ribbon {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+}
