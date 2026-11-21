@@ -223,8 +223,13 @@ async function handleLogin(e) {
             if (ok) return onLoggedIn(data.user, `Welcome back, ${data.user.name}!`);
             if (status === 403 && data.needsVerification) {
                 // Send a fresh code so they can finish verifying
-                await api('/resend-code', jsonBody({ email }));
-                return showVerifyStep(email, 'Your email isn\'t verified yet. We sent you a new code.');
+                const resend = await api('/resend-code', jsonBody({ email }));
+                if (!resend.ok && resend.status !== 429) {
+                    return setAuthMessage('error', resend.data.error || 'Could not send a verification code.');
+                }
+                return showVerifyStep(email, resend.ok
+                    ? 'Your email isn\'t verified yet. We sent you a new code.'
+                    : 'Your email isn\'t verified yet. Enter the code we sent you recently.');
             }
             setAuthMessage('error', data.error || 'Login failed.');
         } catch {

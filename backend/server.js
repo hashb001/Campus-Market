@@ -133,7 +133,17 @@ async function issueVerificationCode(user) {
     user.verifyAttempts = 0;
     user.verifyLastSent = new Date();
     await user.save();
-    await sendVerificationCode(user.email, user.name, code);
+    try {
+        await sendVerificationCode(user.email, user.name, code);
+    } catch (err) {
+        console.error(`Failed to send verification email to ${user.email}:`, err.message);
+        // Don't make them wait out the resend cooldown for an email that never went out
+        user.verifyLastSent = null;
+        await user.save();
+        const e = new Error('We couldn\'t send the verification email right now. Please try again in a few minutes.');
+        e.status = 502;
+        throw e;
+    }
 }
 
 function requireLogin(req, res, next) {
@@ -427,6 +437,7 @@ app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
     if (err.name === 'ValidationError') return res.status(400).json({ error: err.message });
+    if (err.status && err.status < 600) return res.status(err.status).json({ error: err.message });
     console.error(err);
     res.status(500).json({ error: 'Something went wrong. Please try again.' });
 });

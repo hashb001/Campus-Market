@@ -19,7 +19,7 @@ Anyone can browse. To post a listing you have to register with your `@northsouth
 backend/
   server.js      Express API, sessions, Socket.io; also serves the frontend
   models.js      Mongoose models (User, Listing, Image, Contact)
-  mailer.js      Sends verification codes (prints them to the console if SMTP isn't set)
+  mailer.js      Sends verification codes via Brevo or SMTP (prints them to the console if neither is set)
   .env.example   Configuration template
 frontend/
   index.html, script.js, style.css
@@ -56,7 +56,13 @@ Open http://localhost:5000. If SMTP isn't configured, the verification code is p
 
 ### Sending email
 
-Any SMTP provider works. With Gmail:
+**On Render's free plan, use Brevo.** Free plans block outgoing SMTP connections, so Gmail SMTP times out there.
+1. Create a free account at brevo.com (300 emails/day).
+2. Under **Senders**, add and verify the address you want to send from.
+3. Under **SMTP & API → API Keys**, create an API key.
+4. Set `BREVO_API_KEY` and `MAIL_FROM="Campus Market <that-address>"` on Render.
+
+If `BREVO_API_KEY` is set it's used; otherwise SMTP is used if configured. Any SMTP provider works. With Gmail:
 1. Turn on 2-Step Verification.
 2. Create an **App Password**.
 3. Set:
